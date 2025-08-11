@@ -67,18 +67,50 @@ export interface AboutContent {
   order: number
 }
 
+export interface PersonalDetails {
+  id: string
+  email: string
+  location: string
+  profile_picture_url?: string
+  logo_picture_url?: string
+  github?: string
+  twitter?: string
+  facebook?: string
+  linkedin?: string
+  instagram?: string
+  stackoverflow?: string
+}
+
 // Fetch achievements for home page
 export const fetchAchievements = async (): Promise<Achievement[]> => {
   try {
-    const q = query(
-      collection(db, 'achievements'),
-      orderBy('date', 'desc')
-    )
+    const q = query(collection(db, 'achievements'))
     const querySnapshot = await getDocs(q)
-    return querySnapshot.docs.map(doc => ({
+    const achievements = querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     })) as Achievement[]
+    
+    // Sort achievements by date (latest first)
+    // Convert MM, YYYY format to Date objects for proper sorting
+    return achievements.sort((a, b) => {
+      const parseDate = (dateStr: string) => {
+        // Handle "MM, YYYY" format (e.g., "January, 2024")
+        const [month, year] = dateStr.split(', ')
+        const monthNames = [
+          'January', 'February', 'March', 'April', 'May', 'June',
+          'July', 'August', 'September', 'October', 'November', 'December'
+        ]
+        const monthIndex = monthNames.indexOf(month)
+        return new Date(parseInt(year), monthIndex)
+      }
+      
+      const dateA = parseDate(a.date)
+      const dateB = parseDate(b.date)
+      
+      // Sort in descending order (latest first)
+      return dateB.getTime() - dateA.getTime()
+    })
   } catch (error) {
     console.error('Error fetching achievements:', error)
     return []
@@ -196,13 +228,13 @@ export const fetchAboutContent = async (): Promise<AboutContent[]> => {
   }
 }
 
-// Fetch featured products
+// Fetch featured products for home page
 export const fetchFeaturedProducts = async (): Promise<Product[]> => {
   try {
     const q = query(
       collection(db, 'products'),
       where('featured', '==', true),
-      orderBy('title')
+      limit(3)
     )
     const querySnapshot = await getDocs(q)
     return querySnapshot.docs.map(doc => ({
@@ -212,5 +244,26 @@ export const fetchFeaturedProducts = async (): Promise<Product[]> => {
   } catch (error) {
     console.error('Error fetching featured products:', error)
     return []
+  }
+}
+
+// Fetch personal details for contact information
+export const fetchPersonalDetails = async (): Promise<PersonalDetails | null> => {
+  try {
+    const q = query(collection(db, 'personal_details'), limit(1))
+    const querySnapshot = await getDocs(q)
+    
+    if (querySnapshot.empty) {
+      return null
+    }
+    
+    const doc = querySnapshot.docs[0]
+    return {
+      id: doc.id,
+      ...doc.data()
+    } as PersonalDetails
+  } catch (error) {
+    console.error('Error fetching personal details:', error)
+    return null
   }
 }

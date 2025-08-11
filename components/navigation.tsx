@@ -2,11 +2,22 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Menu, X } from "lucide-react"
+import { fetchPersonalDetails, PersonalDetails } from "@/lib/firebase-services"
 
 export function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
+  const [personalDetails, setPersonalDetails] = useState<PersonalDetails | null>(null)
+
+  useEffect(() => {
+    const loadPersonalDetails = async () => {
+      const data = await fetchPersonalDetails()
+      setPersonalDetails(data)
+    }
+    
+    loadPersonalDetails()
+  }, [])
 
   const navItems = [
     { name: "Home", href: "/" },
@@ -24,11 +35,12 @@ export function Navigation() {
           <Link href="/" className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/20 hover:border-white/40 transition-all duration-300">
               <Image
-                src="/professional-headshot.png"
+                src={personalDetails?.logo_picture_url || "/professional-headshot.png"}
                 alt="Arpit Goyal"
                 width={40}
                 height={40}
-                className="object-cover"
+                className="object-cover w-full h-full"
+                style={{ objectPosition: 'center' }}
               />
             </div>
             <span className="text-white font-bold text-lg tracking-wide">ARPIT GOYAL</span>

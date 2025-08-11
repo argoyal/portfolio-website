@@ -2,9 +2,26 @@
 
 import { Mail, MapPin, Github, Linkedin, Facebook, Instagram, MessageSquare, Twitter } from 'lucide-react'
 import { useContact } from '@/contexts/ContactContext'
+import { useEffect, useState } from 'react'
+import { fetchPersonalDetails, PersonalDetails } from '@/lib/firebase-services'
 
 export default function FloatingContact() {
   const { isContactOpen, toggleContact } = useContact()
+  const [personalDetails, setPersonalDetails] = useState<PersonalDetails | null>(null)
+
+  useEffect(() => {
+    const loadPersonalDetails = async () => {
+      const data = await fetchPersonalDetails()
+      setPersonalDetails(data)
+    }
+    
+    loadPersonalDetails()
+  }, [])
+
+  // Don't render if personal details haven't loaded yet
+  if (!personalDetails) {
+    return null
+  }
 
   return (
     <div className="fixed bottom-6 right-6 z-50 group">
@@ -24,82 +41,94 @@ export default function FloatingContact() {
           <h3 className="text-lg font-bold mb-4 text-gray-900">Get In Touch</h3>
           <div className="space-y-3 mb-4">
             <a 
-              href="mailto:arpitgoyal.iitkgp@gmail.com"
+              href={`mailto:${personalDetails.email}`}
               className="flex items-center gap-3 text-gray-700 hover:text-indigo-600 transition-colors"
             >
               <Mail className="w-5 h-5 text-indigo-600 flex-shrink-0" />
-              <span className="text-sm">arpitgoyal.iitkgp@gmail.com</span>
+              <span className="text-sm">{personalDetails.email}</span>
             </a>
             <div className="flex items-center gap-3 text-gray-700">
               <MapPin className="w-5 h-5 text-indigo-600 flex-shrink-0" />
-              <span className="text-sm">Gurugram, India</span>
+              <span className="text-sm">{personalDetails.location}</span>
             </div>
           </div>
           <div className="flex gap-2 flex-wrap">
-            <a 
-              href="https://github.com/argoyal" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="p-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
-              title="GitHub"
-            >
-              <Github className="w-4 h-4" />
-            </a>
-            <a 
-              href="https://www.linkedin.com/in/arpitgoyaliitkgp/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              title="LinkedIn"
-            >
-              <Linkedin className="w-4 h-4" />
-            </a>
-            <a 
-              href="https://facebook.com/arpitgoyal.iitkgp/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="p-2 bg-blue-700 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              title="Facebook"
-            >
-              <Facebook className="w-4 h-4" />
-            </a>
-            <a 
-              href="https://www.instagram.com/_._appy_._/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300"
-              title="Instagram"
-            >
-              <Instagram className="w-4 h-4" />
-            </a>
-            <a 
-              href="https://stackoverflow.com/users/4719293/arpit-goyal" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="p-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
-              title="Stack Overflow"
-            >
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-4 h-4"
-                viewBox="0 0 384 512"
-                fill="currentColor"
-            >
-                <path d="M290.7 311l-1.8 35.6H100.9v-35.6h189.8zm25.7-85.6l-11.2 33.9-178.3-58.6 
-                11.2-33.9 178.3 58.6zm41.2-67.8l-20.4 29.3L168.8 88.5l20.4-29.3 
-                168.4 98.4zm26.3-69.1l-27.4 24.3-129.7-146 
-                27.4-24.3 129.7 146zM320 368v112H64V368h256zm-32 32H96v48h192v-48z"/>
-            </svg>
-            </a>
-            <a 
-              href="https://twitter.com/_arpitgoyal_" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="p-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500 transition-colors"
-              title="Twitter"
-            >
-              <Twitter className="w-4 h-4" />
-            </a>
+            {personalDetails.github && (
+              <a 
+                href={personalDetails.github}
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="p-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+                title="GitHub"
+              >
+                <Github className="w-4 h-4" />
+              </a>
+            )}
+            {personalDetails.linkedin && (
+              <a 
+                href={personalDetails.linkedin}
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                title="LinkedIn"
+              >
+                <Linkedin className="w-4 h-4" />
+              </a>
+            )}
+            {personalDetails.facebook && (
+              <a 
+                href={personalDetails.facebook}
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="p-2 bg-blue-700 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                title="Facebook"
+              >
+                <Facebook className="w-4 h-4" />
+              </a>
+            )}
+            {personalDetails.instagram && (
+              <a 
+                href={personalDetails.instagram}
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-300"
+                title="Instagram"
+              >
+                <Instagram className="w-4 h-4" />
+              </a>
+            )}
+            {personalDetails.stackoverflow && (
+              <a 
+                href={personalDetails.stackoverflow}
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="p-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
+                title="Stack Overflow"
+              >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-4 h-4"
+                    viewBox="0 0 384 512"
+                    fill="currentColor"
+                >
+                    <path d="M290.7 311l-1.8 35.6H100.9v-35.6h189.8zm25.7-85.6l-11.2 33.9-178.3-58.6 
+                    11.2-33.9 178.3 58.6zm41.2-67.8l-20.4 29.3L168.8 88.5l20.4-29.3 
+                    168.4 98.4zm26.3-69.1l-27.4 24.3-129.7-146 
+                    27.4-24.3 129.7 146zM320 368v112H64V368h256zm-32 32H96v48h192v-48z"/>
+                </svg>
+              </a>
+            )}
+            {personalDetails.twitter && (
+              <a 
+                href={personalDetails.twitter}
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="p-2 bg-blue-400 text-white rounded-lg hover:bg-blue-500 transition-colors"
+                title="Twitter"
+              >
+                <Twitter className="w-4 h-4" />
+              </a>
+            )}
           </div>
         </div>
         
