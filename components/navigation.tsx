@@ -23,7 +23,6 @@ export function Navigation() {
     { name: "Home", href: "/" },
     { name: "About", href: "/about" },
     { name: "My Products", href: "/products" },
-    { name: "Stats", href: "/stats" },
     { name: "My Blog", href: "/blog" },
   ]
 

@@ -112,9 +112,18 @@ export default function AboutPage() {
               </p>
               <button
                 onClick={() => {
-                  // TODO: Implement actual PDF download from Firebase storage or external URL
-                  // For now, you can link to a hosted PDF or implement Firebase Storage download
-                  alert("Resume download will be implemented with Firebase Storage")
+                  // Download resume PDF from Google Drive
+                  const resumeUrl = "https://drive.google.com/file/d/1Bp_rSPQfQ0EHv6NtFqU7AxJu1c13NtS3/view?usp=sharing"
+                  const downloadUrl = resumeUrl.replace('/view?usp=sharing', '/preview')
+                  
+                  // Create a temporary link element to trigger download
+                  const link = document.createElement('a')
+                  link.href = downloadUrl
+                  link.target = '_blank'
+                  link.download = 'Arpit_Goyal_Resume.pdf'
+                  document.body.appendChild(link)
+                  link.click()
+                  document.body.removeChild(link)
                 }}
                 className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-lg font-medium hover:shadow-lg transition-all duration-300 hover:scale-105"
               >
@@ -260,25 +269,40 @@ export default function AboutPage() {
                   Experience
                 </h2>
                 <div className="space-y-6">
-                  {experiences.map((exp, index) => (
-                    <div key={exp.id} className="border-l-4 border-indigo-200 pl-6 pb-6">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Calendar className="w-4 h-4 text-indigo-600" />
-                        <span className="text-sm font-medium text-indigo-600">{exp.period}</span>
+                  {experiences.map((exp, index) => {
+                    // Format dates for display
+                    const formatDate = (dateString: string) => {
+                      const date = new Date(dateString)
+                      return date.toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'long' 
+                      })
+                    }
+                    
+                    const startDateFormatted = exp.startDate ? formatDate(exp.startDate) : ''
+                    const endDateFormatted = exp.endDate ? formatDate(exp.endDate) : 'Present'
+                    const dateRange = exp.current ? `${startDateFormatted} - Present` : `${startDateFormatted} - ${endDateFormatted}`
+                    
+                    return (
+                      <div key={exp.id} className="border-l-4 border-indigo-200 pl-6 pb-6">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Calendar className="w-4 h-4 text-indigo-600" />
+                          <span className="text-sm font-medium text-indigo-600">{dateRange}</span>
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900">{exp.role}</h3>
+                        <p className="text-lg text-gray-600 mb-2">{exp.company}</p>
+                        {exp.description && exp.description.length > 0 && (
+                          <ul className="list-disc list-inside text-sm text-gray-600 space-y-1 mt-2">
+                            {exp.description.map((point, pointIndex) => (
+                              <li key={pointIndex} className="text-gray-700">
+                                {point}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
                       </div>
-                      <h3 className="text-xl font-bold text-gray-900">{exp.role}</h3>
-                      <p className="text-lg text-gray-600 mb-2">{exp.company}</p>
-                      {exp.description && exp.description.length > 0 && (
-                        <ul className="list-disc list-inside text-sm text-gray-600 space-y-1 mt-2">
-                          {exp.description.map((point, pointIndex) => (
-                            <li key={pointIndex} className="text-gray-700">
-                              {point}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </CardContent>
             </Card>

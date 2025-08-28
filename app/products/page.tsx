@@ -25,6 +25,7 @@ export default function ProductsPage() {
   const [visibleCards, setVisibleCards] = useState<string[]>([])
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set())
   const [carouselRef, setCarouselRef] = useState<HTMLDivElement | null>(null)
+  const [featuredCarouselRef, setFeaturedCarouselRef] = useState<HTMLDivElement | null>(null)
   const [canScrollLeftState, setCanScrollLeftState] = useState(false)
   const [canScrollRightState, setCanScrollRightState] = useState(false)
   const { openContact } = useContact()
@@ -103,6 +104,25 @@ export default function ProductsPage() {
     }
   }
 
+  const scrollFeaturedCarousel = (direction: 'left' | 'right') => {
+    if (featuredCarouselRef) {
+      const scrollAmount = 520 // Card width + gap
+      const currentScroll = featuredCarouselRef.scrollLeft
+      
+      if (direction === 'left') {
+        featuredCarouselRef.scrollTo({
+          left: currentScroll - scrollAmount,
+          behavior: 'smooth'
+        })
+      } else {
+        featuredCarouselRef.scrollTo({
+          left: currentScroll + scrollAmount,
+          behavior: 'smooth'
+        })
+      }
+    }
+  }
+
   const canScrollLeft = () => canScrollLeftState
   const canScrollRight = () => canScrollRightState
 
@@ -142,95 +162,134 @@ export default function ProductsPage() {
                 <h2 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                   Featured Projects
                 </h2>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                  {products
-                    .filter(p => p.featured)
-                    .sort((a, b) => {
-                      if (!a.startDate || !b.startDate) return 0;
-                      return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
-                    })
-                    .map((product, index) => (
-                    <Card
-                      key={product.id}
-                      className={`group hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg overflow-hidden ${
-                        visibleCards.includes(product.id) ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
-                      }`}
-                      style={{ transitionDelay: `${index * 100}ms` }}
+                <div className="relative">
+                  {/* Left Navigation Button */}
+                  {products.filter(p => p.featured).length > 1 && (
+                    <button
+                      onClick={() => scrollFeaturedCarousel('left')}
+                      className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/90 hover:bg-white shadow-lg rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 -ml-6"
+                      aria-label="Scroll featured projects left"
                     >
-                      {/* Featured Badge */}
-                      <div className="absolute top-4 right-4 z-10">
-                        <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0">
-                          <Star className="w-3 h-3 mr-1" />
-                          Featured
-                        </Badge>
-                      </div>
+                      <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                    </button>
+                  )}
 
-                      {/* Image */}
-                      <div className="relative h-64 overflow-hidden">
-                        <Image
-                          src={product.image || "/placeholder.svg"}
-                          alt={product.title}
-                          fill
-                          className="object-cover group-hover:scale-110 transition-transform duration-500"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      </div>
+                  {/* Right Navigation Button */}
+                  {products.filter(p => p.featured).length > 1 && (
+                    <button
+                      onClick={() => scrollFeaturedCarousel('right')}
+                      className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/90 hover:bg-white shadow-lg rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 -mr-6"
+                      aria-label="Scroll featured projects right"
+                    >
+                      <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </button>
+                  )}
 
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-2xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors duration-300">
-                          {product.title}
-                        </CardTitle>
-                      </CardHeader>
+                  <div 
+                    ref={setFeaturedCarouselRef}
+                    className="flex gap-8 overflow-x-auto pb-4 scrollbar-hide scroll-smooth"
+                  >
+                    {products
+                      .filter(p => p.featured)
+                      .sort((a, b) => {
+                        if (!a.startDate || !b.startDate) return 0;
+                        return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+                      })
+                      .map((product, index) => (
+                      <Card
+                        key={product.id}
+                        className={`group hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 bg-white/80 backdrop-blur-sm border-0 shadow-lg overflow-hidden flex-shrink-0 flex flex-col ${
+                          visibleCards.includes(product.id) ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+                        }`}
+                        style={{ 
+                          transitionDelay: `${index * 100}ms`,
+                          width: '500px'
+                        }}
+                      >
+                        {/* Featured Badge */}
+                        <div className="absolute top-4 right-4 z-10">
+                          <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0">
+                            <Star className="w-3 h-3 mr-1" />
+                            Featured
+                          </Badge>
+                        </div>
 
-                      <CardContent className="pt-0">
-                        <div className="mb-4">
-                          <div className={`text-gray-600 leading-relaxed ${
-                            expandedDescriptions.has(product.id) 
-                              ? 'max-h-32 overflow-y-auto pr-2' 
-                              : ''
-                          }`}>
-                            {expandedDescriptions.has(product.id) ? product.description : truncateDescription(product.description)}
+                        {/* Image */}
+                        <div className="relative h-64 overflow-hidden">
+                          <Image
+                            src={product.image || "/placeholder.svg"}
+                            alt={product.title}
+                            fill
+                            className="object-cover group-hover:scale-110 transition-transform duration-500"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        </div>
+
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-2xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors duration-300">
+                            {product.title}
+                          </CardTitle>
+                        </CardHeader>
+
+                        <CardContent className="pt-0 flex-1">
+                          <div className="mb-4">
+                            <div className={`text-gray-600 leading-relaxed ${
+                              expandedDescriptions.has(product.id) 
+                                ? 'min-h-0' 
+                                : 'h-20'
+                            }`}>
+                              {expandedDescriptions.has(product.id) ? product.description : truncateDescription(product.description)}
+                            </div>
+                            {product.description.length > 120 && (
+                              <button
+                                onClick={() => toggleDescription(product.id)}
+                                className="text-indigo-600 hover:text-indigo-700 hover:underline text-sm font-medium mt-2 transition-colors duration-200"
+                              >
+                                {expandedDescriptions.has(product.id) ? 'Read less' : 'Read more'}
+                              </button>
+                            )}
                           </div>
-                          {product.description.length > 120 && (
-                            <button
-                              onClick={() => toggleDescription(product.id)}
-                              className="text-indigo-600 hover:text-indigo-700 hover:underline text-sm font-medium mt-2 transition-colors duration-200"
+
+                          {/* Technologies */}
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {product.technologies.map((tech) => (
+                              <Badge
+                                key={tech}
+                                variant="secondary"
+                                className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors duration-200"
+                              >
+                                {tech}
+                              </Badge>
+                            ))}
+                          </div>
+                        </CardContent>
+                        
+                        {/* Bottom Button - Always at bottom */}
+                        <div className="mt-auto p-6 pt-0">
+                          {product.project_url ? (
+                            <a
+                              href={product.project_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 font-medium"
                             >
-                              {expandedDescriptions.has(product.id) ? 'Read less' : 'Read more'}
-                            </button>
+                              <ExternalLink className="w-4 h-4" />
+                              Visit Project
+                            </a>
+                          ) : (
+                            <div className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-300 text-gray-500 rounded-lg font-medium cursor-not-allowed">
+                              <ExternalLink className="w-4 h-4" />
+                              No Link Available
+                            </div>
                           )}
                         </div>
-
-                        {/* Technologies */}
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {product.technologies.map((tech) => (
-                            <Badge
-                              key={tech}
-                              variant="secondary"
-                              className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors duration-200"
-                            >
-                              {tech}
-                            </Badge>
-                          ))}
-                        </div>
-                      </CardContent>
-                      
-                      {/* Bottom Button */}
-                      {product.project_url && (
-                        <div className="p-6 pt-0">
-                          <a
-                            href={product.project_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 font-medium"
-                          >
-                            <ExternalLink className="w-4 h-4" />
-                            Visit Project
-                          </a>
-                        </div>
-                      )}
-                    </Card>
-                  ))}
+                      </Card>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
@@ -281,7 +340,7 @@ export default function ProductsPage() {
                       .map((product, index) => (
                       <Card
                         key={product.id}
-                        className={`group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/80 backdrop-blur-sm border-0 shadow-lg overflow-hidden flex-shrink-0 ${
+                        className={`group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 bg-white/80 backdrop-blur-sm border-0 shadow-lg overflow-hidden flex-shrink-0 flex flex-col ${
                           visibleCards.includes(product.id) ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
                         }`}
                         style={{ 
@@ -306,12 +365,13 @@ export default function ProductsPage() {
                           </CardTitle>
                         </CardHeader>
 
-                        <CardContent className="pt-0">
-                          <div className="mb-3">
+                        <CardContent className="pt-0 flex-1 flex flex-col">
+                          {/* Description Area - Fixed Height in Collapsed Mode */}
+                          <div className="mb-3 flex-1">
                             <div className={`text-gray-600 leading-relaxed text-sm ${
                               expandedDescriptions.has(product.id) 
-                                ? 'max-h-24 overflow-y-auto pr-2' 
-                                : ''
+                                ? 'min-h-0' 
+                                : 'h-16'
                             }`}>
                               {expandedDescriptions.has(product.id) ? product.description : truncateDescription(product.description, 80)}
                             </div>
@@ -325,8 +385,8 @@ export default function ProductsPage() {
                             )}
                           </div>
 
-                          {/* Technologies */}
-                          <div className="flex flex-wrap gap-1 mb-3">
+                          {/* Technologies - Fixed Height for Consistent Alignment */}
+                          <div className="h-16 flex flex-wrap gap-1 mb-3">
                             {product.technologies.slice(0, 3).map((tech) => (
                               <Badge
                                 key={tech}
@@ -347,9 +407,9 @@ export default function ProductsPage() {
                           </div>
                         </CardContent>
                         
-                        {/* Bottom Button */}
-                        {product.project_url && (
-                          <div className="p-4 pt-0">
+                        {/* Bottom Button - Always at bottom */}
+                        <div className="mt-auto p-4 pt-0">
+                          {product.project_url ? (
                             <a
                               href={product.project_url}
                               target="_blank"
@@ -359,8 +419,13 @@ export default function ProductsPage() {
                               <ExternalLink className="w-3 h-3" />
                               Visit Project
                             </a>
-                          </div>
-                        )}
+                          ) : (
+                            <div className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gray-300 text-gray-500 rounded-lg font-medium text-sm cursor-not-allowed">
+                              <ExternalLink className="w-3 h-3" />
+                              No Link Available
+                            </div>
+                          )}
+                        </div>
                       </Card>
                     ))}
                   </div>
