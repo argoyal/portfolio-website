@@ -106,7 +106,17 @@ export default function ProductsPage() {
 
   const scrollFeaturedCarousel = (direction: 'left' | 'right') => {
     if (featuredCarouselRef) {
-      const scrollAmount = 520 // Card width + gap
+      // Responsive scroll amount based on screen size
+      const isMobile = window.innerWidth < 768
+      const isTablet = window.innerWidth < 1024
+      
+      let scrollAmount = 520 // Default for desktop
+      if (isMobile) {
+        scrollAmount = 280 // Mobile card width + gap
+      } else if (isTablet) {
+        scrollAmount = 400 // Tablet card width + gap
+      }
+      
       const currentScroll = featuredCarouselRef.scrollLeft
       
       if (direction === 'left') {
@@ -167,10 +177,10 @@ export default function ProductsPage() {
                   {products.filter(p => p.featured).length > 1 && (
                     <button
                       onClick={() => scrollFeaturedCarousel('left')}
-                      className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/90 hover:bg-white shadow-lg rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 -ml-6"
+                      className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 md:w-12 md:h-12 bg-white/90 hover:bg-white shadow-lg rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 -ml-2 md:-ml-6"
                       aria-label="Scroll featured projects left"
                     >
-                      <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 md:w-6 md:h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                       </svg>
                     </button>
@@ -180,10 +190,10 @@ export default function ProductsPage() {
                   {products.filter(p => p.featured).length > 1 && (
                     <button
                       onClick={() => scrollFeaturedCarousel('right')}
-                      className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white/90 hover:bg-white shadow-lg rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 -mr-6"
+                      className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 md:w-12 md:h-12 bg-white/90 hover:bg-white shadow-lg rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 -mr-2 md:-mr-6"
                       aria-label="Scroll featured projects right"
                     >
-                      <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 md:w-6 md:h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                       </svg>
                     </button>
@@ -191,7 +201,7 @@ export default function ProductsPage() {
 
                   <div 
                     ref={setFeaturedCarouselRef}
-                    className="flex gap-8 overflow-x-auto pb-4 scrollbar-hide scroll-smooth"
+                    className="flex gap-4 md:gap-6 lg:gap-8 overflow-x-auto pb-4 scrollbar-hide scroll-smooth px-2 md:px-0"
                   >
                     {products
                       .filter(p => p.featured)
@@ -207,19 +217,21 @@ export default function ProductsPage() {
                         }`}
                         style={{ 
                           transitionDelay: `${index * 100}ms`,
-                          width: '500px'
+                          minWidth: '280px',
+                          width: '100%',
+                          maxWidth: '500px'
                         }}
                       >
                         {/* Featured Badge */}
                         <div className="absolute top-4 right-4 z-10">
-                          <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0">
+                          <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 text-xs md:text-sm">
                             <Star className="w-3 h-3 mr-1" />
                             Featured
                           </Badge>
                         </div>
 
                         {/* Image */}
-                        <div className="relative h-64 overflow-hidden">
+                        <div className="relative h-48 md:h-56 lg:h-64 overflow-hidden">
                           <Image
                             src={product.image || "/placeholder.svg"}
                             alt={product.title}
@@ -229,18 +241,18 @@ export default function ProductsPage() {
                           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         </div>
 
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-2xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors duration-300">
+                        <CardHeader className="pb-3 px-4 md:px-6">
+                          <CardTitle className="text-xl md:text-2xl font-bold text-gray-900 group-hover:text-indigo-600 transition-colors duration-300">
                             {product.title}
                           </CardTitle>
                         </CardHeader>
 
-                        <CardContent className="pt-0 flex-1">
+                        <CardContent className="pt-0 flex-1 px-4 md:px-6">
                           <div className="mb-4">
-                            <div className={`text-gray-600 leading-relaxed ${
+                            <div className={`text-gray-600 leading-relaxed text-sm md:text-base ${
                               expandedDescriptions.has(product.id) 
                                 ? 'min-h-0' 
-                                : 'h-20'
+                                : 'h-16 md:h-20'
                             }`}>
                               {expandedDescriptions.has(product.id) ? product.description : truncateDescription(product.description)}
                             </div>
@@ -260,7 +272,7 @@ export default function ProductsPage() {
                               <Badge
                                 key={tech}
                                 variant="secondary"
-                                className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors duration-200"
+                                className="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-colors duration-200 text-xs md:text-sm"
                               >
                                 {tech}
                               </Badge>
@@ -269,19 +281,19 @@ export default function ProductsPage() {
                         </CardContent>
                         
                         {/* Bottom Button - Always at bottom */}
-                        <div className="mt-auto p-6 pt-0">
+                        <div className="mt-auto p-4 md:p-6 pt-0">
                           {product.project_url ? (
                             <a
                               href={product.project_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 font-medium"
+                              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105 font-medium text-sm md:text-base"
                             >
                               <ExternalLink className="w-4 h-4" />
                               Visit Project
                             </a>
                           ) : (
-                            <div className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-300 text-gray-500 rounded-lg font-medium cursor-not-allowed">
+                            <div className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-300 text-gray-500 rounded-lg font-medium text-sm md:text-base cursor-not-allowed">
                               <ExternalLink className="w-4 h-4" />
                               No Link Available
                             </div>

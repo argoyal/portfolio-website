@@ -12,6 +12,7 @@ const nextConfig = {
   output: 'standalone',
   trailingSlash: true,
   assetPrefix: process.env.NODE_ENV === 'production' ? process.env.NEXT_PUBLIC_BASE_URL : '',
+  reactStrictMode: false,
 }
 
 export default nextConfig
